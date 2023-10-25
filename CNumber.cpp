@@ -42,7 +42,7 @@ CNumber::CNumber(int value) {
 	}
 }
 
-//Methods:
+//Operators:
 
 // Old implementation, replaced by a more elegant solution
 //void CNumber::operator=(const int value)
@@ -83,6 +83,62 @@ void CNumber::operator=(const CNumber& otherInstance)
 	
 }
 
+void CNumber::operator-(const CNumber& otherInstance)
+{
+	// 1. determine which number is bigger:
+	//check length, if equal, check each digit from the left, if all are equal, zero the array and return
+	//save result in bool
+	// 
+	// 2. check signs
+	//two positive numbers: substract normally
+	//two negative numbers: substract, then flip the sign at the end
+	//one number is positive, the other is negative: add numbers, then flip the sign at the end
+	// 
+	// 3. for loop: (results in result array, substract from smaller number)
+	//substract number by number starting from the last.
+	//if result is negative, add 10 to the current number and substract 1 from the next number (set bool)
+	// 
+	// 4. if "this" number was smaller, flip the sign
+
+	bool thisIsBigger = false;
+	bool doAddition = false;
+
+	// 1. determine which number is bigger:
+	
+	if (length > otherInstance.length) thisIsBigger = true;
+	else if (length < otherInstance.length) thisIsBigger = false;
+	else //lengths are equal, check each digit from the left
+	{
+		for (int i = 0; i < length; i++)
+		{
+			if (listOfInts[i] > otherInstance.listOfInts[i])
+			{
+				thisIsBigger = true;
+				i == length; //break out of the loop without using break
+			}
+			else if (listOfInts[i] < otherInstance.listOfInts[i])
+			{
+				thisIsBigger = false;
+				i == length; //break out of the loop without using break
+			}
+			else if (i == length - 1) // numbers are same but could have different signs
+			{  
+				if (isPositive == otherInstance.isPositive) { //all digits are equal, substracting the sume number always results in a zero
+					length = 1;
+					delete[] listOfInts;
+					listOfInts = new int[1];
+					listOfInts[0] = 0;
+					return;
+				}
+				else doAddition = true;//if the numbers are the same, but one of them is negative, result will be negative result of addition
+			}
+		}
+	}
+
+
+
+}
+//Non operator methods:
 string CNumber::ToString()
 {
 	string result = "";

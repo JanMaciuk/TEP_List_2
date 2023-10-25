@@ -30,6 +30,7 @@ public:
 	//Operators:
 	void operator=(const int value);
 	void operator=(const CNumber& otherInstance);
+	void operator-(const CNumber& otherInstance);
 
 	//Methods:
 	string ToString();
