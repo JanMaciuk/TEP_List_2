@@ -5,12 +5,19 @@
 
 int main()
 {
-    CNumber test = CNumber(-12);
-    test.PrintNumber();
-    test = 123;
-    test.PrintNumber();
+    CNumber test = CNumber();
     CNumber test2 = CNumber();
-    test2.PrintNumber();
+    test = 103;
+    test2 = 100;
+    test - test2;
+    test.PrintNumber();
+    //Substraction implementation progress:
+    //Done:
+    //When first number is bigger than second and signs are the same
+    //TODO:
+    //When first number is smaller than second
+    //When signs are the same
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

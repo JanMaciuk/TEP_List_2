@@ -16,11 +16,23 @@ int CNumber::countDigits(int value)
 	return count;
 }
 
+int CNumber::countLeadingZeroes(int value[], int length) 
+{
+	int count = 0;
+	for (int i = 0; i < length; i++)
+	{
+		if (value[i] == 0) count++;
+		else return count;
+	}
+	return count;
+}
+
 //Constructors:
 CNumber::CNumber() 
-{
-	length = 0; // a number with zero length is considered an empty instance
+{//default constructor - stores number zero
+	length = 1;
 	listOfInts = new int[1];
+	listOfInts[0] = 0;
 	isPositive = true;
 
 }
@@ -90,50 +102,114 @@ void CNumber::operator-(const CNumber& otherInstance)
 	//save result in bool
 	// 
 	// 2. check signs
-	//two positive numbers: substract normally
-	//two negative numbers: substract, then flip the sign at the end
+	//two positive numbers: substract normally (result will keep sign - will be positive)
+	//two negative numbers: substract normally, (result will keep sign - will be negative)
 	//one number is positive, the other is negative: add numbers, then flip the sign at the end
 	// 
 	// 3. for loop: (results in result array, substract from smaller number)
+	//if (substract normally):
 	//substract number by number starting from the last.
 	//if result is negative, add 10 to the current number and substract 1 from the next number (set bool)
+	// 
+	//else if (do addition):
+	// add number by number starting from the last.
+	// if result is greater than 9, substract 10 from the current number and add 1 to the next number (set bool)
+	// if carryOver is set after loop is done, copy array to new array with length + 1, set first number to 1
 	// 
 	// 4. if "this" number was smaller, flip the sign
 
 	bool thisIsBigger = false;
 	bool doAddition = false;
+	bool flipSign = false;
 
 	// 1. determine which number is bigger:
-	
 	if (length > otherInstance.length) thisIsBigger = true;
 	else if (length < otherInstance.length) thisIsBigger = false;
-	else //lengths are equal, check each digit from the left
+	else for (int i = 0; i < length; i++) //lengths are equal, check each digit from the left
 	{
-		for (int i = 0; i < length; i++)
+		if (listOfInts[i] > otherInstance.listOfInts[i])
 		{
-			if (listOfInts[i] > otherInstance.listOfInts[i])
-			{
-				thisIsBigger = true;
-				i == length; //break out of the loop without using break
-			}
-			else if (listOfInts[i] < otherInstance.listOfInts[i])
-			{
-				thisIsBigger = false;
-				i == length; //break out of the loop without using break
-			}
-			else if (i == length - 1) // numbers are same but could have different signs
-			{  
-				if (isPositive == otherInstance.isPositive) { //all digits are equal, substracting the sume number always results in a zero
-					length = 1;
-					delete[] listOfInts;
-					listOfInts = new int[1];
-					listOfInts[0] = 0;
-					return;
-				}
-				else doAddition = true;//if the numbers are the same, but one of them is negative, result will be negative result of addition
+			thisIsBigger = true;
+			i = length; //break out of the loop without using break
+		}
+		else if (listOfInts[i] < otherInstance.listOfInts[i])
+		{
+			thisIsBigger = false;
+			i = length; //break out of the loop without using break
+		}
+		else if (i == length - 1) // numbers are same but could have different signs
+		{  
+			if (isPositive == otherInstance.isPositive) { //all digits are equal, substracting the sume number always results in a zero
+				length = 1;
+				delete[] listOfInts;
+				listOfInts = new int[1];
+				listOfInts[0] = 0;
+				return;
 			}
 		}
 	}
+	
+
+	// 2. check signs:
+	if (isPositive != otherInstance.isPositive) { doAddition = true; } //one number is positive, the other is negative: add numbers, then flip the sign at the end
+
+
+	//3. main for loop:
+	int resultLength = max(length, otherInstance.length) + 1;
+	int* result = new int[resultLength]; //+1 in case we need to add a carry over in addition
+	result[0] = 0; // zero the leading digit to easily check if it was modified
+	int carryOver = 0;
+	
+	if (!doAddition)
+	{
+		if (thisIsBigger) 
+		{
+			for (int i = otherInstance.length-1, j = length-1; i >= 0; i--, j--)
+			{
+				result[j + 1] = listOfInts[j] - otherInstance.listOfInts[i] - carryOver;
+				if (result[j + 1] < 0)
+				{
+					result[j + 1] += 10;
+					carryOver = 1;
+				}
+				else carryOver = 0;
+				if (i == 0 && j > 0)
+				{
+					result[j] = listOfInts[j] - carryOver;
+					j--;
+					//Copy rest of listOfInts to result
+					while (j>=0)
+					{
+						result[j] = listOfInts[j];
+						j--;
+					}
+			    }
+			}
+			
+		}
+		else
+		{
+			//substract from the other number
+			
+		}
+		
+	}
+	else 
+	{
+		//do addition
+	}
+
+	// copy result to listOfInts:
+	delete[] listOfInts;
+	int newResultLength = resultLength - countLeadingZeroes(result, resultLength);
+	listOfInts = new int[newResultLength];
+	for (int i = newResultLength-1, j = resultLength -1; i >= 0 && j >= 0; i--,j--)
+	{
+		listOfInts[i] = result[j];
+	}
+	length = newResultLength;
+	delete[] result;
+
 
 
 
@@ -142,9 +218,7 @@ void CNumber::operator-(const CNumber& otherInstance)
 string CNumber::ToString()
 {
 	string result = "";
-	if (length == 0) return empty_instance;
-	if (isPositive) result += positive_sign;
-	else result += negative_sign;
+	if (!isPositive) result += negative_sign;
 	for (int i = 0; i < length; i++)
 	{
 		result += to_string(listOfInts[i]);

@@ -5,9 +5,7 @@ using namespace std;
 
 const string printing = "Stored number: ";
 const string deleting = "Deleting instance of a number of length: ";
-const string empty_instance = "Empty instance - no numerical value";
 const string negative_sign = "-";
-const string positive_sign = "+";
 const string newline = "\n";
 
 class CNumber
@@ -19,6 +17,7 @@ private:
 	bool isPositive;
 
 	static int countDigits(int value);
+	static int countLeadingZeroes(int value[], int lenght);
 
 
 public:
