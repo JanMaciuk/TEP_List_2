@@ -18,6 +18,7 @@ private:
 
 	static int countDigits(int value);
 	static int countLeadingZeroes(int value[], int lenght);
+	static void substractArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList);
 
 
 public:

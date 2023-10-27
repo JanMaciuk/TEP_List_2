@@ -7,16 +7,15 @@ int main()
 {
     CNumber test = CNumber();
     CNumber test2 = CNumber();
-    test = 103;
-    test2 = 100;
+    test = 33;
+    test2 = 1033;
     test - test2;
     test.PrintNumber();
     //Substraction implementation progress:
     //Done:
-    //When first number is bigger than second and signs are the same
-    //TODO:
-    //When first number is smaller than second
     //When signs are the same
+    //TODO:
+    //When signs are different
 
 }
 

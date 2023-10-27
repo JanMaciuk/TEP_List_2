@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-
+//private statics used in methods
 int CNumber::countDigits(int value) 
 {
 	if (value == 0)  return 1; 
@@ -25,6 +25,32 @@ int CNumber::countLeadingZeroes(int value[], int length)
 		else return count;
 	}
 	return count;
+}
+
+void CNumber::substractArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList) 
+{
+	int carryOver = 0;
+	for (int i = otherInstanceLength - 1, j = thisLength - 1; i >= 0; i--, j--)
+	{
+		resultList[j + 1] = thisList[j] - otherList[i] - carryOver;
+		if (resultList[j + 1] < 0)
+		{
+			resultList[j + 1] += 10;
+			carryOver = 1;
+		}
+		else carryOver = 0;
+		if (i == 0 && j > 0)
+		{
+			resultList[j] = thisList[j - 1] - carryOver;
+			j--;
+			//Copy rest of listOfInts to result
+			while (j > 0)
+			{
+				resultList[j] = thisList[j - 1];
+				j--;
+			}
+		}
+	}
 }
 
 //Constructors:
@@ -162,37 +188,14 @@ void CNumber::operator-(const CNumber& otherInstance)
 	
 	if (!doAddition)
 	{
-		if (thisIsBigger) 
+		if (thisIsBigger) //substract from this number (its bigger)
 		{
-			for (int i = otherInstance.length-1, j = length-1; i >= 0; i--, j--)
-			{
-				result[j + 1] = listOfInts[j] - otherInstance.listOfInts[i] - carryOver;
-				if (result[j + 1] < 0)
-				{
-					result[j + 1] += 10;
-					carryOver = 1;
-				}
-				else carryOver = 0;
-				if (i == 0 && j > 0)
-				{
-					result[j] = listOfInts[j] - carryOver;
-					j--;
-					//Copy rest of listOfInts to result
-					while (j>=0)
-					{
-						result[j] = listOfInts[j];
-						j--;
-					}
-			    }
-			}
-			
+			substractArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, result);
 		}
-		else
+		else //substract from the other number (its bigger)
 		{
-			//substract from the other number
-			
+			substractArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, result);
 		}
-		
 	}
 	else 
 	{
@@ -208,6 +211,7 @@ void CNumber::operator-(const CNumber& otherInstance)
 		listOfInts[i] = result[j];
 	}
 	length = newResultLength;
+	if(!thisIsBigger) isPositive = !isPositive; //flip the sign if substracted from the other number (reversed operation order)
 	delete[] result;
 
 
