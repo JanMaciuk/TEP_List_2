@@ -16,6 +16,7 @@ int CNumber::countDigits(int value)
 	return count;
 }
 
+
 int CNumber::countLeadingZeroes(int value[], int length) 
 {
 	int count = 0;
@@ -27,6 +28,50 @@ int CNumber::countLeadingZeroes(int value[], int length)
 	return count;
 }
 
+
+bool CNumber::isBigger(const CNumber& thisInstance, const CNumber& otherInstance, bool* isIdentical) {
+	// check which CNumber holds a number with a bigger absolute value
+	*isIdentical = false;
+	bool thisIsBigger = false;
+	if (thisInstance.length > otherInstance.length) thisIsBigger = true;
+	else if (thisInstance.length < otherInstance.length) thisIsBigger = false;
+	else for (int i = 0; i < thisInstance.length; i++) //lengths are equal, check each digit from the left
+	{
+		if (thisInstance.listOfInts[i] > otherInstance.listOfInts[i])
+		{
+			thisIsBigger = true;
+			i = thisInstance.length; //break out of the loop without using break
+		}
+		else if (thisInstance.listOfInts[i] < otherInstance.listOfInts[i])
+		{
+			thisIsBigger = false;
+			i = thisInstance.length; //break out of the loop without using break
+		}
+		else if (i == thisInstance.length - 1) // numbers are same but could have different signs
+		{ //this check will only be executed if all digits are equal, we might as well check the signs to speed up substracting identical numbers
+			if (thisInstance.isPositive == otherInstance.isPositive) { //all digits and signs are equal
+				*isIdentical = true;
+			}
+		}
+	}
+	return thisIsBigger;
+}
+
+
+void CNumber::copyArray(CNumber& thisInstance, int* array[], int arrayLength)
+{
+	delete[] thisInstance.listOfInts;
+	int newArrayLength = arrayLength - countLeadingZeroes(*array, arrayLength); //get rid of leading zeroes
+	thisInstance.listOfInts = new int[newArrayLength];
+	for (int i = newArrayLength - 1, j = arrayLength - 1; i >= 0 && j >= 0; i--, j--)
+	{
+		thisInstance.listOfInts[i] = (*array)[j];
+	}
+	thisInstance.length = newArrayLength;
+	delete[] * array;
+}
+
+
 void CNumber::substractArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList) 
 {
 	int carryOver = 0;
@@ -35,7 +80,7 @@ void CNumber::substractArrays(int thisLength, int otherInstanceLength, int* this
 		resultList[j + 1] = thisList[j] - otherList[i] - carryOver;
 		if (resultList[j + 1] < 0)
 		{
-			resultList[j + 1] += 10;
+			resultList[j + 1] += ten;
 			carryOver = 1;
 		}
 		else carryOver = 0;
@@ -52,6 +97,47 @@ void CNumber::substractArrays(int thisLength, int otherInstanceLength, int* this
 		}
 	}
 }
+
+
+void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList)
+{
+	int carryOver = 0;
+	for (int i = otherInstanceLength - 1, j = thisLength - 1; i >= 0; i--, j--)
+	{
+		resultList[j + 1] = thisList[j] + otherList[i] + carryOver;
+		if (resultList[j + 1] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
+		{
+			resultList[j + 1] -= ten;
+			carryOver = 1;
+		}
+		else carryOver = 0;
+		if (i == 0 && j > 0)
+		{
+			// if carryOver is set, keep adding 1 to the next number until there is no carryOver
+			// For example when adding 9999 + 1, this loop will execute many times even though we are done iterating over 1;
+			while (carryOver == 1) { 
+				resultList[j] = thisList[j - 1] + carryOver;
+				if (resultList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
+				{
+					resultList[j] -= ten;
+					carryOver = 1;
+				}
+				else carryOver = 0;
+				j--;
+				if (j == 0 && carryOver == 1) { resultList[0] = 1; carryOver = 0; }//If we are at the last digit and still have a carryOver, add 1 to the first digit of the result
+			}
+			//Copy rest of listOfInts to result
+			while (j > 0)
+			{
+				resultList[j] = thisList[j - 1];
+				j--;
+			}
+		}
+	}
+	if (carryOver == 1) { resultList[0] = 1; }
+}
+
+
 
 //Constructors:
 CNumber::CNumber() 
@@ -80,7 +166,11 @@ CNumber::CNumber(int value) {
 	}
 }
 
-//Operators:
+
+
+//OPERATORS:
+
+//Assignment:
 
 // Old implementation, replaced by a more elegant solution
 //void CNumber::operator=(const int value)
@@ -121,7 +211,15 @@ void CNumber::operator=(const CNumber& otherInstance)
 	
 }
 
-void CNumber::operator-(const CNumber& otherInstance)
+
+//Substraction:
+void CNumber::operator-=(const int value) { *this -= CNumber(value); } // Simply call the operator- with a temporary instance of CNumber
+
+void CNumber::operator-=(const CNumber& otherInstance) { *this = *this - otherInstance; } //use the operator- to get the result, then copy it to this instance
+
+CNumber CNumber::operator-(const int value) { return *this - CNumber(value); } // Simply call the operator- with a temporary instance of CNumber
+
+CNumber CNumber::operator-(const CNumber& otherInstance) 
 {
 	// 1. determine which number is bigger:
 	//check length, if equal, check each digit from the left, if all are equal, zero the array and return
@@ -130,7 +228,7 @@ void CNumber::operator-(const CNumber& otherInstance)
 	// 2. check signs
 	//two positive numbers: substract normally (result will keep sign - will be positive)
 	//two negative numbers: substract normally, (result will keep sign - will be negative)
-	//one number is positive, the other is negative: add numbers, then flip the sign at the end
+	//one number is positive, the other is negative: add numbers, flip sign if this number was smaller
 	// 
 	// 3. for loop: (results in result array, substract from smaller number)
 	//if (substract normally):
@@ -140,53 +238,30 @@ void CNumber::operator-(const CNumber& otherInstance)
 	//else if (do addition):
 	// add number by number starting from the last.
 	// if result is greater than 9, substract 10 from the current number and add 1 to the next number (set bool)
-	// if carryOver is set after loop is done, copy array to new array with length + 1, set first number to 1
+	// if carryOver is set after loop is done, keep adding 1 to the next number until there is no carryOver
 	// 
-	// 4. if "this" number was smaller, flip the sign
+	// 4. if "this" number was smaller, flip the sign, copy result to final array
 
-	bool thisIsBigger = false;
-	bool doAddition = false;
-	bool flipSign = false;
+	bool isIdentical = false;
+	CNumber resultInstance = CNumber();
 
 	// 1. determine which number is bigger:
-	if (length > otherInstance.length) thisIsBigger = true;
-	else if (length < otherInstance.length) thisIsBigger = false;
-	else for (int i = 0; i < length; i++) //lengths are equal, check each digit from the left
+	bool thisIsBigger = isBigger(*this, otherInstance, &isIdentical);
+	if (isIdentical) //if the numbers are identical we can simply return a zero (substracting a number from itself)
 	{
-		if (listOfInts[i] > otherInstance.listOfInts[i])
-		{
-			thisIsBigger = true;
-			i = length; //break out of the loop without using break
-		}
-		else if (listOfInts[i] < otherInstance.listOfInts[i])
-		{
-			thisIsBigger = false;
-			i = length; //break out of the loop without using break
-		}
-		else if (i == length - 1) // numbers are same but could have different signs
-		{  
-			if (isPositive == otherInstance.isPositive) { //all digits are equal, substracting the sume number always results in a zero
-				length = 1;
-				delete[] listOfInts;
-				listOfInts = new int[1];
-				listOfInts[0] = 0;
-				return;
-			}
-		}
+		return resultInstance; //resultInstance is initialized as zero
 	}
-	
 
 	// 2. check signs:
-	if (isPositive != otherInstance.isPositive) { doAddition = true; } //one number is positive, the other is negative: add numbers, then flip the sign at the end
-
+	bool doAddition = (isPositive != otherInstance.isPositive); //one number is positive, the other is negative: add numbers, then flip the sign at the end
 
 	//3. main for loop:
 	int resultLength = max(length, otherInstance.length) + 1;
 	int* result = new int[resultLength]; //+1 in case we need to add a carry over in addition
 	result[0] = 0; // zero the leading digit to easily check if it was modified
 	int carryOver = 0;
-	
-	if (!doAddition)
+
+	if (!doAddition) //do substraction
 	{
 		if (thisIsBigger) //substract from this number (its bigger)
 		{
@@ -195,29 +270,83 @@ void CNumber::operator-(const CNumber& otherInstance)
 		else //substract from the other number (its bigger)
 		{
 			substractArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, result);
+			isPositive = !isPositive; //flip the sign if substracted from the other number (reversed operation order)
 		}
 	}
-	else 
+	else //do addition
 	{
-		//do addition
+		// which number is bigger matters for iterating over the arrays.
+		if (thisIsBigger) //add to this number (its bigger)
+		{
+			addArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, result);
+		}
+		else //add to the other number (its bigger)
+		{
+			addArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, result);
+		}
 	}
 
-	// copy result to listOfInts:
-	delete[] listOfInts;
-	int newResultLength = resultLength - countLeadingZeroes(result, resultLength);
-	listOfInts = new int[newResultLength];
-	for (int i = newResultLength-1, j = resultLength -1; i >= 0 && j >= 0; i--,j--)
-	{
-		listOfInts[i] = result[j];
-	}
-	length = newResultLength;
-	if(!thisIsBigger) isPositive = !isPositive; //flip the sign if substracted from the other number (reversed operation order)
-	delete[] result;
-
-
-
-
+	//4. copy result to listOfInts:
+	
+	resultInstance.length = resultLength;
+	resultInstance.isPositive = isPositive;
+	copyArray(resultInstance, &result, resultLength);
+	return resultInstance;
 }
+
+
+//Addition:
+void CNumber::operator+=(const int value) { *this += CNumber(value); } // Simply call the operator+ with a temporary instance of CNumber
+
+void CNumber::operator+=(const CNumber& otherInstance) { *this = *this + otherInstance; } //use the operator+ to get the result, then copy it to this instance
+
+CNumber CNumber::operator+(const int value) { return *this + CNumber(value); } // Simply call the operator+ with a temporary instance of CNumber
+
+CNumber CNumber::operator+(const CNumber& otherInstance) 
+{
+	//both positive: add the smaller number to the bigger number, keep sign
+	//both negative: add the smaller number to the bigger number, keep sign
+	//one positive, the other negative: substract the smaller number from the bigger number, keep sign of the bigger number
+	bool isIdentical = false;
+	bool thisIsBigger = isBigger(*this, otherInstance, &isIdentical);
+	bool doSubstraction = (isPositive != otherInstance.isPositive); //one positive, the other negative: substract the smaller number from the bigger number, keep sign of the bigger number
+
+	int resultLength = max(length, otherInstance.length) + 1;
+	int* result = new int[resultLength]; //+1 in case we need to add a carry over in addition
+	result[0] = 0; // zero the leading digit to easily check if it was modified
+	int carryOver = 0;
+
+	if (!doSubstraction) 
+	{
+		if (thisIsBigger) //add to this number (its bigger)
+		{
+			addArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, result);
+		}
+		else //add to the other number (its bigger)
+		{
+			addArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, result);
+		}
+	}
+	else //do substraction
+	{
+		if (thisIsBigger) //substract from this number (its bigger)
+		{
+			substractArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, result);
+		}
+		else //substract from the other number (its bigger)
+		{
+			substractArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, result);
+			isPositive = otherInstance.isPositive; //keep the sign of the bigger number
+		}
+	}
+	CNumber resultInstance = CNumber();
+	resultInstance.length = resultLength;
+	resultInstance.isPositive = isPositive;
+	copyArray(resultInstance, &result, resultLength);	
+	return resultInstance;
+}
+
+
 //Non operator methods:
 string CNumber::ToString()
 {
@@ -235,6 +364,6 @@ void CNumber::PrintNumber() { cout << printing << ToString() << newline; }
 
 CNumber::~CNumber()
 {
-	cout << deleting << length << newline;
+	cout << deleting << ToString() << newline;
 	delete[] listOfInts;
 }
