@@ -162,7 +162,7 @@ CNumber::CNumber(int value) {
 	//Fill array with digits
 	for (int i = 0; i < length; i++)
 	{
-		listOfInts[i] =  valueAsString[i] - '0'; // Substract the ASCII value of 0 to get the actual digit (characters have codes after eachother)
+		listOfInts[i] =  valueAsString[i] - zeroChar; // Substract the ASCII value of 0 to get the actual digit (characters have codes after eachother)
 	}
 }
 
