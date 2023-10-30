@@ -115,7 +115,8 @@ void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, 
 		{
 			// if carryOver is set, keep adding 1 to the next number until there is no carryOver
 			// For example when adding 9999 + 1, this loop will execute many times even though we are done iterating over 1;
-			while (carryOver == 1) { 
+			while (carryOver == 1) 
+			{ 
 				resultList[j] = thisList[j - 1] + carryOver;
 				if (resultList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
 				{
@@ -134,9 +135,62 @@ void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, 
 			}
 		}
 	}
-	if (carryOver == 1) { resultList[0] = 1; }
 }
 
+void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList)
+{
+	// Version of addArrays that modifies the first array instead of creating a new one
+	// Differs in signature, will be called if a pointer to result array is not provided
+	int carryOver = 0;
+	for (int i = otherInstanceLength - 1, j = thisLength - 1; i >= 0; i--, j--)
+	{
+		thisList[j] = thisList[j] + otherList[i] + carryOver;
+		if (thisList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
+		{
+			thisList[j] -= baseNumber;
+			carryOver = 1;
+		}
+		else carryOver = 0;
+		if (i == 0 && j > 0)
+		{
+			// if carryOver is set, keep adding 1 to the next number until there is no carryOver
+			// For example when adding 9999 + 1, this loop will execute many times even though we are done iterating over 1;
+			j--;
+			while (carryOver == 1) 
+			{
+				thisList[j] = thisList[j] + carryOver;
+				if (thisList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
+				{
+					thisList[j] -= baseNumber;
+					carryOver = 1;
+				}
+				else carryOver = 0;
+				j--;
+				if (j == 0 && carryOver == 1) { thisList[0] = 1; carryOver = 0; }//If we are at the last digit and still have a carryOver, add 1 to the first digit of the result
+			}
+		}
+	}
+}
+
+
+void CNumber::multiplyArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int** results, int resultLength, int numberOfResults)
+{
+	for (int resultIndex = numberOfResults - 1, j = otherInstanceLength - 1, resultOffset = 1; resultIndex >= 0; resultIndex--, j--, resultOffset++)
+	{
+		int currentCarryOver = 0;
+		for (int i = thisLength - 1, k = resultLength - resultOffset; i >= 0; i--, k--)
+		{
+			int nextCarryOver = 0;
+			results[resultIndex][k] = thisList[i] * otherList[j] + currentCarryOver;
+			while (results[resultIndex][k] > maxDigit)
+			{ // make sure the digit is not greater than 9
+				results[resultIndex][k] -= baseNumber;
+				nextCarryOver++;
+			}
+			currentCarryOver = nextCarryOver;
+		}
+	}
+}
 
 
 //Constructors:
@@ -356,8 +410,8 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 	// Multilication:
 	// nextCarryOver = 0
 	// For last digit of the smaller number, multiply it by each digit of the bigger number, store the result in an array
+	// Add currentCarryOver to the digit
 	// While resulting digit is greater than 9, increase nextCarryOver by 1 and decrease the digit by 10
-	// Add currentCarryOver to the digit (check if not greater than 9)
 	// currentCarryOver = nextCarryOver
 	// Move on to the next digit of the smaller number, repeat
 	// 
@@ -365,24 +419,41 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 
 	int finalResultLength = length + otherInstance.length; // Maximum length of the result
 	int* finalResult = new int[finalResultLength];
+for (int i = 0; i < finalResultLength; i++) { finalResult[i] = 0; } // Initialize all digits to 0
 
 	int numberOfResults= min(length, otherInstance.length);
-	int resultLength = max(length, otherInstance.length) + 1;
+	int resultLength = max(length, otherInstance.length) + numberOfResults;
 	int** results = new int* [numberOfResults];
 	for (int i = 0; i < numberOfResults; i++)
 	{
 		results[i] = new int[resultLength];
+		for(int j = 0; j < resultLength; j++) { results[i][j] = 0; } // Initialize all digits to 0
 	}
+	bool thisIsLonger = (length >= otherInstance.length);
 
-	// Do multiplication:
+	if (thisIsLonger) { multiplyArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, results, resultLength, numberOfResults); }
+	else { multiplyArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, results, resultLength, numberOfResults);}
+	
 
+	//Print elements of results array:
+	//TODO: delete
+	for (int i = 0; i < numberOfResults; i++)
+	{
+		for (int j = 0; j < resultLength; j++)
+		{
+			cout << results[i][j] << " ";
+		}
+		cout << endl;
+	}
+		
+	
 
 	// Sum the arrays into finalResult:
-
-
-	// Dealocate temporary results array:
-	for (int i = 0; i < numberOfResults; i++) { delete[] results[i]; }
-
+	for(int i = 0; i < numberOfResults; i++)
+	{
+		addArrays(finalResultLength, resultLength, finalResult, results[i]);
+		delete[] results[i];
+	}
 
 	// Return the result:
 	CNumber resultInstance = CNumber();
@@ -391,6 +462,8 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 	copyArray(resultInstance, &finalResult, finalResultLength);
 	return resultInstance;
 }
+
+
 
 //Non operator methods:
 string CNumber::ToString()

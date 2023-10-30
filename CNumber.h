@@ -29,7 +29,9 @@ private:
 	static void copyArray(CNumber& thisInstance, int* array[], int arrayLength);
 	static void substractArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList);
 	static void addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList);
-	
+	static void addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList);
+	static void multiplyArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int** results, int resultLength, int numberOfResults);
+
 
 public:
 	

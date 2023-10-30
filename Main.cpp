@@ -11,11 +11,11 @@ int main()
     test += test2;
     test.PrintNumber();
     test3.PrintNumber();
-    //Substraction implementation progress:
-    //Done:
-    //When signs are the same
-    //TODO:
-    //When signs are different
+    test = 1010;
+    test2 = 50033;
+    test3 = test * test2;
+    test3.PrintNumber();
+
 
 }
 
