@@ -53,8 +53,10 @@ public:
 	CNumber operator+(const CNumber& otherInstance);
 	CNumber operator+(const int value);
 
-
+	void operator*=(const CNumber& otherInstance);
+	void operator*=(const int value);
 	CNumber operator*(const CNumber& otherInstance);
+	CNumber operator*(const int value);
 
 	//Methods:
 	string ToString();

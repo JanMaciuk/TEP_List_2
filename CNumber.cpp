@@ -402,9 +402,13 @@ CNumber CNumber::operator+(const CNumber& otherInstance)
 
 
 //Multiplication:
-CNumber CNumber::operator*(const CNumber& otherInstance) {
-	
+void CNumber::operator*=(const CNumber& otherInstance) { *this = *this * otherInstance; } //use the operator* to get the result, then copy it to this instance
 
+void CNumber::operator*=(const int value) { *this *= CNumber(value); } // Simply call the operator* with a temporary instance of CNumber
+
+CNumber CNumber::operator*(const int value) { return *this * CNumber(value); } // Simply call the operator* with a temporary instance of CNumber
+
+CNumber CNumber::operator*(const CNumber& otherInstance) {
 	// Create a 2D array to store the result of each multiplication
 	// Array will store (smaller length) numbers of length (bigger length + 1) each
 	// Multilication:
@@ -419,7 +423,7 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 
 	int finalResultLength = length + otherInstance.length; // Maximum length of the result
 	int* finalResult = new int[finalResultLength];
-for (int i = 0; i < finalResultLength; i++) { finalResult[i] = 0; } // Initialize all digits to 0
+	for (int i = 0; i < finalResultLength; i++) { finalResult[i] = 0; } // Initialize all digits to 0
 
 	int numberOfResults= min(length, otherInstance.length);
 	int resultLength = max(length, otherInstance.length) + numberOfResults;
@@ -445,9 +449,7 @@ for (int i = 0; i < finalResultLength; i++) { finalResult[i] = 0; } // Initializ
 		}
 		cout << endl;
 	}
-		
 	
-
 	// Sum the arrays into finalResult:
 	for(int i = 0; i < numberOfResults; i++)
 	{

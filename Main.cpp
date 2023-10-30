@@ -12,8 +12,7 @@ int main()
     test.PrintNumber();
     test3.PrintNumber();
     test = 1010;
-    test2 = 50033;
-    test3 = test * test2;
+    test3 = test * 10;
     test3.PrintNumber();
 
 
