@@ -80,7 +80,7 @@ void CNumber::substractArrays(int thisLength, int otherInstanceLength, int* this
 		resultList[j + 1] = thisList[j] - otherList[i] - carryOver;
 		if (resultList[j + 1] < 0)
 		{
-			resultList[j + 1] += ten;
+			resultList[j + 1] += baseNumber;
 			carryOver = 1;
 		}
 		else carryOver = 0;
@@ -107,7 +107,7 @@ void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, 
 		resultList[j + 1] = thisList[j] + otherList[i] + carryOver;
 		if (resultList[j + 1] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
 		{
-			resultList[j + 1] -= ten;
+			resultList[j + 1] -= baseNumber;
 			carryOver = 1;
 		}
 		else carryOver = 0;
@@ -119,7 +119,7 @@ void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, 
 				resultList[j] = thisList[j - 1] + carryOver;
 				if (resultList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
 				{
-					resultList[j] -= ten;
+					resultList[j] -= baseNumber;
 					carryOver = 1;
 				}
 				else carryOver = 0;
@@ -346,6 +346,51 @@ CNumber CNumber::operator+(const CNumber& otherInstance)
 	return resultInstance;
 }
 
+
+//Multiplication:
+CNumber CNumber::operator*(const CNumber& otherInstance) {
+	
+
+	// Create a 2D array to store the result of each multiplication
+	// Array will store (smaller length) numbers of length (bigger length + 1) each
+	// Multilication:
+	// nextCarryOver = 0
+	// For last digit of the smaller number, multiply it by each digit of the bigger number, store the result in an array
+	// While resulting digit is greater than 9, increase nextCarryOver by 1 and decrease the digit by 10
+	// Add currentCarryOver to the digit (check if not greater than 9)
+	// currentCarryOver = nextCarryOver
+	// Move on to the next digit of the smaller number, repeat
+	// 
+	// After multiplying all digits of the smaller number, add all results together into finalResult array
+
+	int finalResultLength = length + otherInstance.length; // Maximum length of the result
+	int* finalResult = new int[finalResultLength];
+
+	int numberOfResults= min(length, otherInstance.length);
+	int resultLength = max(length, otherInstance.length) + 1;
+	int** results = new int* [numberOfResults];
+	for (int i = 0; i < numberOfResults; i++)
+	{
+		results[i] = new int[resultLength];
+	}
+
+	// Do multiplication:
+
+
+	// Sum the arrays into finalResult:
+
+
+	// Dealocate temporary results array:
+	for (int i = 0; i < numberOfResults; i++) { delete[] results[i]; }
+
+
+	// Return the result:
+	CNumber resultInstance = CNumber();
+	resultInstance.length = finalResultLength;
+	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
+	copyArray(resultInstance, &finalResult, finalResultLength);
+	return resultInstance;
+}
 
 //Non operator methods:
 string CNumber::ToString()

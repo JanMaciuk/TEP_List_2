@@ -10,8 +10,12 @@ const string newline = "\n";
 const int defaultValue = 0;
 const int defaultLength = 1;
 const int maxDigit = 9; // highest digit in decimal system
+<<<<<<< Updated upstream
 const int ten = 10; // used for carry over in addition and substraction
 const char zeroChar = '0'; // used for converting int to char
+=======
+const int baseNumber = 10; // used for carry over in addition and substraction
+>>>>>>> Stashed changes
 
 
 class CNumber
@@ -51,6 +55,8 @@ public:
 	CNumber operator+(const CNumber& otherInstance);
 	CNumber operator+(const int value);
 
+
+	CNumber operator*(const CNumber& otherInstance);
 
 	//Methods:
 	string ToString();
