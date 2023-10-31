@@ -466,6 +466,34 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 }
 
 
+//Division:
+CNumber CNumber::operator/(const CNumber& otherInstance) 
+{
+	// Chech edge cases:
+	// if this or otherInstance is zero, return zero (assume division by zero returns zero)
+	// if otherInstance is 1, return a copy of this
+	// if this is smaller than otherInstance, return zero
+	// if this is equal to otherInstance, return 1
+	// 
+	// Do division:
+	// 
+
+	// Chech edge cases:
+	bool isIdentical = false;
+	bool thisIsBigger = isBigger(*this, otherInstance, &isIdentical);
+	if (isIdentical) { return CNumber(1); }  //if the numbers are identical return 1 (dividing a number by itself)
+	if (!thisIsBigger) { return CNumber(0); } //if this is smaller than otherInstance, division will result in a number smaller than 1, return 0
+	// if this or otherInstance is zero, return zero
+	if ((otherInstance.length == 1 && otherInstance.listOfInts[0] == 0) || (length == 1 && listOfInts[0] == 0)) { return CNumber(0); }
+	// if otherInstance is 1, return a copy of this
+	if (otherInstance.length == 1 && otherInstance.listOfInts[0] == 1) 
+	{ 
+		CNumber result = *this;
+		result = *this;
+		return result;
+	}
+
+}
 
 //Non operator methods:
 string CNumber::ToString()
