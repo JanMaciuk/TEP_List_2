@@ -7,14 +7,10 @@ int main()
     CNumber test2 = CNumber();
     test = 125;
     test2 = 5;
-    CNumber test3 = test + test2;
-    test += test2;
-    test.PrintNumber();
-    test3.PrintNumber();
-    test = 1010;
-    test3 = test * 10;
-    test3.PrintNumber();
-
+    CNumber result = test + test2;
+    result.PrintNumber();
+    CNumber result2 = test / test2;
+    result2.PrintNumber();
 
 }
 

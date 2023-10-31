@@ -68,7 +68,7 @@ void CNumber::copyArray(CNumber& thisInstance, int* array[], int arrayLength)
 		thisInstance.listOfInts[i] = (*array)[j];
 	}
 	thisInstance.length = newArrayLength;
-	delete[] * array;
+	delete * array;
 }
 
 
@@ -341,8 +341,6 @@ CNumber CNumber::operator-(const CNumber& otherInstance)
 	}
 
 	//4. copy result to listOfInts:
-	
-	resultInstance.length = resultLength;
 	resultInstance.isPositive = isPositive;
 	copyArray(resultInstance, &result, resultLength);
 	return resultInstance;
@@ -394,7 +392,6 @@ CNumber CNumber::operator+(const CNumber& otherInstance)
 		}
 	}
 	CNumber resultInstance = CNumber();
-	resultInstance.length = resultLength;
 	resultInstance.isPositive = isPositive;
 	copyArray(resultInstance, &result, resultLength);	
 	return resultInstance;
@@ -459,7 +456,6 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 
 	// Return the result:
 	CNumber resultInstance = CNumber();
-	resultInstance.length = finalResultLength;
 	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
 	copyArray(resultInstance, &finalResult, finalResultLength);
 	return resultInstance;
@@ -469,16 +465,23 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 //Division:
 CNumber CNumber::operator/(const CNumber& otherInstance) 
 {
-	// Chech edge cases:
+	// Check edge cases:
 	// if this or otherInstance is zero, return zero (assume division by zero returns zero)
 	// if otherInstance is 1, return a copy of this
 	// if this is smaller than otherInstance, return zero
 	// if this is equal to otherInstance, return 1
 	// 
-	// Do division:
+	// divisor = int value of otherInstance.listOfInts
+	// temp = listOfInts[0]
+	// Do division: (for loop, i=0)
+	// while (temp < divisor) { resultArray[i]=0; i++; temp = temp * 10 + listOfInts[i+1] }
+	// resultArray[i] = temp / divisor
+	// substract = divisor * resultArray[i]
+	// temp = temp - substract
+	// 
 	// 
 
-	// Chech edge cases:
+	// Check edge cases:
 	bool isIdentical = false;
 	bool thisIsBigger = isBigger(*this, otherInstance, &isIdentical);
 	if (isIdentical) { return CNumber(1); }  //if the numbers are identical return 1 (dividing a number by itself)
@@ -492,6 +495,41 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 		result = *this;
 		return result;
 	}
+
+	// divisor = int value of otherInstance.listOfInts
+	int divisor = 0;
+	for(int i = 0; i < otherInstance.length; i++) { divisor = divisor * 10 + otherInstance.listOfInts[i]; }
+	int temp = listOfInts[0];
+	int* resultArray = new int[length];
+	//Do division:
+	for (int i = 0; i < length; i++)
+	{
+		while (temp < divisor && i < length) 
+		{ 
+			resultArray[i] = 0; 
+			if (i < length -1) i++;
+			temp = temp * 10 + listOfInts[i];
+		}
+		if (i < length) //else: we finished, ignore remainder and quit loop
+		{
+			resultArray[i] = temp / divisor;
+			int substract = divisor * resultArray[i];
+			temp = temp - substract;
+		}
+	}
+
+	//print resultArray:
+	for (int i = 0; i < length; i++) 
+	{
+	cout << resultArray[i] << " ";
+	}
+	CNumber resultInstance = CNumber();
+	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
+	copyArray(resultInstance, &resultArray, length);
+	cout << " End division: ";
+	resultInstance.PrintNumber();
+	return resultInstance;
+	//TODO: resultinstance is deleted after function returns, clearing the array, causing a crash when the destructor is called
 
 }
 
