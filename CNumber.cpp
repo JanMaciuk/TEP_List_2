@@ -220,6 +220,17 @@ CNumber::CNumber(int value) {
 	}
 }
 
+CNumber::CNumber(const CNumber& otherInstance)
+{ //copy constructor
+	length = otherInstance.length;
+	isPositive = otherInstance.isPositive;
+	listOfInts = new int[length];
+	for (int i = 0; i < length; i++)
+	{
+		listOfInts[i] = otherInstance.listOfInts[i];
+	}
+}
+
 
 
 //OPERATORS:
@@ -242,6 +253,7 @@ CNumber::CNumber(int value) {
 //	}
 //	
 //}
+
 void CNumber::operator=(const int value) { *this = CNumber(value); }
 	//Avoid code repetition by using the constructor
 	//temp is allocated on the stack, so it will be destroyed after the function ends
@@ -262,7 +274,6 @@ void CNumber::operator=(const CNumber& otherInstance)
 	{
 		listOfInts[i] = otherInstance.listOfInts[i];
 	}
-	
 }
 
 
@@ -435,17 +446,6 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 	if (thisIsLonger) { multiplyArrays(length, otherInstance.length, listOfInts, otherInstance.listOfInts, results, resultLength, numberOfResults); }
 	else { multiplyArrays(otherInstance.length, length, otherInstance.listOfInts, listOfInts, results, resultLength, numberOfResults);}
 	
-
-	//Print elements of results array:
-	//TODO: delete
-	for (int i = 0; i < numberOfResults; i++)
-	{
-		for (int j = 0; j < resultLength; j++)
-		{
-			cout << results[i][j] << " ";
-		}
-		cout << endl;
-	}
 	
 	// Sum the arrays into finalResult:
 	for(int i = 0; i < numberOfResults; i++)
@@ -463,6 +463,12 @@ CNumber CNumber::operator*(const CNumber& otherInstance) {
 
 
 //Division:
+void CNumber::operator/=(const int value) { *this /= CNumber(value); } // Simply call the operator/ with a temporary instance of CNumber
+
+void CNumber::operator/=(const CNumber& otherInstance) { *this = *this / otherInstance; } //use the operator/ to get the result, then copy it to this instance
+
+CNumber CNumber::operator/(const int value) { return *this / CNumber(value); } // Simply call the operator/ with a temporary instance of CNumber
+
 CNumber CNumber::operator/(const CNumber& otherInstance) 
 {
 	// Check edge cases:
@@ -478,8 +484,6 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 	// resultArray[i] = temp / divisor
 	// substract = divisor * resultArray[i]
 	// temp = temp - substract
-	// 
-	// 
 
 	// Check edge cases:
 	bool isIdentical = false;
@@ -518,19 +522,10 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 		}
 	}
 
-	//print resultArray:
-	for (int i = 0; i < length; i++) 
-	{
-	cout << resultArray[i] << " ";
-	}
 	CNumber resultInstance = CNumber();
 	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
 	copyArray(resultInstance, &resultArray, length);
-	cout << " End division: ";
-	resultInstance.PrintNumber();
 	return resultInstance;
-	//TODO: resultinstance is deleted after function returns, clearing the array, causing a crash when the destructor is called
-
 }
 
 //Non operator methods:
@@ -548,8 +543,4 @@ string CNumber::ToString()
 void CNumber::PrintNumber() { cout << printing << ToString() << newline; }
 
 
-CNumber::~CNumber()
-{
-	cout << deleting << ToString() << newline;
-	delete[] listOfInts;
-}
+CNumber::~CNumber() { delete[] listOfInts; }

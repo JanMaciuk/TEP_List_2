@@ -38,6 +38,7 @@ public:
 	//Constructors:
 	CNumber();
 	CNumber(int value);
+	CNumber(const CNumber& otherInstance);
 
 	//Operators:
 	void operator=(const CNumber& otherInstance);
@@ -58,7 +59,10 @@ public:
 	CNumber operator*(const CNumber& otherInstance);
 	CNumber operator*(const int value);
 
+	void operator/=(const int value);
+	void operator/=(const CNumber& otherInstance);
 	CNumber operator/(const CNumber& otherInstance);
+	CNumber operator/(const int value);
 
 	//Methods:
 	string ToString();
