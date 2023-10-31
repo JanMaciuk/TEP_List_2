@@ -58,6 +58,8 @@ public:
 	CNumber operator*(const CNumber& otherInstance);
 	CNumber operator*(const int value);
 
+	CNumber operator/(const CNumber& otherInstance);
+
 	//Methods:
 	string ToString();
 	void PrintNumber();
