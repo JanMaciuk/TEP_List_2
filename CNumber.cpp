@@ -20,7 +20,7 @@ int CNumber::countDigits(int value)
 int CNumber::countLeadingZeroes(int value[], int length) 
 {
 	int count = 0;
-	for (int i = 0; i < length; i++)
+	for (int i = 0; i < length-1; i++) //length-1 because the last digit isnt a leading zero
 	{
 		if (value[i] == 0) count++;
 		else return count;
@@ -59,7 +59,7 @@ bool CNumber::isBigger(const CNumber& thisInstance, const CNumber& otherInstance
 
 
 void CNumber::copyArray(CNumber& thisInstance, int* array[], int arrayLength)
-{
+{ 
 	delete[] thisInstance.listOfInts;
 	int newArrayLength = arrayLength - countLeadingZeroes(*array, arrayLength); //get rid of leading zeroes
 	thisInstance.listOfInts = new int[newArrayLength];
@@ -403,7 +403,8 @@ CNumber CNumber::operator+(const CNumber& otherInstance)
 		}
 	}
 	CNumber resultInstance = CNumber();
-	resultInstance.isPositive = isPositive;
+	if (thisIsBigger) { resultInstance.isPositive = isPositive; }
+	else { resultInstance.isPositive = otherInstance.isPositive; }
 	copyArray(resultInstance, &result, resultLength);	
 	return resultInstance;
 }
