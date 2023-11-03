@@ -23,6 +23,7 @@ private:
 	int* listOfInts;
 	bool isPositive;
 
+	int ToInt() const;
 	static int countDigits(int value);
 	static int countLeadingZeroes(int value[], int lenght);
 	static bool isBigger(const CNumber& thisInstance, const CNumber& otherInstance, bool* isIdentical);
@@ -31,7 +32,8 @@ private:
 	static void addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int* resultList);
 	static void addArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList);
 	static void multiplyArrays(int thisLength, int otherInstanceLength, int* thisList, int* otherList, int** results, int resultLength, int numberOfResults);
-
+	static int divideNumbers(const CNumber& dividend, const CNumber& divisor, int* remainder);
+	
 
 public:
 	
@@ -64,9 +66,10 @@ public:
 	CNumber operator/(const CNumber& otherInstance);
 	CNumber operator/(const int value);
 
+
 	//Methods:
-	string ToString();
-	void PrintNumber();
+	string ToString() const;
+	void PrintNumber() const;
 
 
 

@@ -32,7 +32,7 @@ int CNumber::countLeadingZeroes(int value[], int length)
 bool CNumber::isBigger(const CNumber& thisInstance, const CNumber& otherInstance, bool* isIdentical) {
 	// check which CNumber holds a number with a bigger absolute value
 	*isIdentical = false;
-	bool thisIsBigger = false;
+	bool thisIsBigger = true;
 	if (thisInstance.length > otherInstance.length) thisIsBigger = true;
 	else if (thisInstance.length < otherInstance.length) thisIsBigger = false;
 	else for (int i = 0; i < thisInstance.length; i++) //lengths are equal, check each digit from the left
@@ -151,23 +151,27 @@ void CNumber::addArrays(int thisLength, int otherInstanceLength, int* thisList, 
 			carryOver = 1;
 		}
 		else carryOver = 0;
-		if (i == 0 && j > 0)
+		if (i == 0)
 		{
 			// if carryOver is set, keep adding 1 to the next number until there is no carryOver
 			// For example when adding 9999 + 1, this loop will execute many times even though we are done iterating over 1;
-			j--;
-			while (carryOver == 1) 
+			if (j > 0)
 			{
-				thisList[j] = thisList[j] + carryOver;
-				if (thisList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
-				{
-					thisList[j] -= baseNumber;
-					carryOver = 1;
-				}
-				else carryOver = 0;
 				j--;
-				if (j == 0 && carryOver == 1) { thisList[0] = 1; carryOver = 0; }//If we are at the last digit and still have a carryOver, add 1 to the first digit of the result
+				while (carryOver == 1)
+				{
+					thisList[j] = thisList[j] + carryOver;
+					if (thisList[j] > maxDigit) // if greater than 9, substract 10 from the current number and add 1 to the next number
+					{
+						thisList[j] -= baseNumber;
+						carryOver = 1;
+					}
+					else carryOver = 0;
+					j--;
+					if (j <= 0 && carryOver == 1) { thisList[0] += 1; carryOver = 0; }//If we are at the last digit and still have a carryOver, add 1 to the first digit of the result
+				}
 			}
+			else thisList[0] += carryOver;
 		}
 	}
 }
@@ -189,7 +193,28 @@ void CNumber::multiplyArrays(int thisLength, int otherInstanceLength, int* thisL
 			}
 			currentCarryOver = nextCarryOver;
 		}
+		results[resultIndex][0] += currentCarryOver;
 	}
+}
+
+int CNumber::divideNumbers(const CNumber& dividend, const CNumber& divisor, int* remainder)
+{
+	//substract divisor from dividend until dividend is smaller than divisor
+	//return the number of substractions
+	//remainder is the last value of dividend
+	int count = 0;
+	bool isIdentical = false;
+	CNumber dividendCopy = CNumber(dividend);
+	dividendCopy.isPositive = true;
+	CNumber divisorCopy = CNumber(divisor);
+	divisorCopy.isPositive = true;
+	while (isBigger(dividendCopy, divisorCopy, &isIdentical))
+	{
+		dividendCopy -= divisorCopy;
+		count++;
+	}
+	*remainder = dividendCopy.ToInt();
+	return count;
 }
 
 
@@ -470,7 +495,7 @@ void CNumber::operator/=(const CNumber& otherInstance) { *this = *this / otherIn
 
 CNumber CNumber::operator/(const int value) { return *this / CNumber(value); } // Simply call the operator/ with a temporary instance of CNumber
 
-CNumber CNumber::operator/(const CNumber& otherInstance) 
+CNumber CNumber::operator/(const CNumber& otherInstance)
 {
 	// Check edge cases:
 	// if this or otherInstance is zero, return zero (assume division by zero returns zero)
@@ -478,13 +503,12 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 	// if this is smaller than otherInstance, return zero
 	// if this is equal to otherInstance, return 1
 	// 
-	// divisor = int value of otherInstance.listOfInts
+	// divisor = otherInstance.listOfInts
 	// temp = listOfInts[0]
 	// Do division: (for loop, i=0)
 	// while (temp < divisor) { resultArray[i]=0; i++; temp = temp * 10 + listOfInts[i+1] }
 	// resultArray[i] = temp / divisor
-	// substract = divisor * resultArray[i]
-	// temp = temp - substract
+	// temp = division remainder
 
 	// Check edge cases:
 	bool isIdentical = false;
@@ -494,33 +518,32 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 	// if this or otherInstance is zero, return zero
 	if ((otherInstance.length == 1 && otherInstance.listOfInts[0] == 0) || (length == 1 && listOfInts[0] == 0)) { return CNumber(0); }
 	// if otherInstance is 1, return a copy of this
-	if (otherInstance.length == 1 && otherInstance.listOfInts[0] == 1) 
-	{ 
-		CNumber result = *this;
-		result = *this;
+	if (otherInstance.length == 1 && otherInstance.listOfInts[0] == 1)
+	{
+		CNumber result = CNumber(*this);
 		return result;
 	}
 
-	unsigned long divisor = 0;
-	for(int i = 0; i < otherInstance.length; i++) { divisor = divisor * 10 + otherInstance.listOfInts[i]; }
-	int temp = listOfInts[0];
+	CNumber divisor = CNumber(otherInstance);
+	CNumber temp = CNumber(listOfInts[0]);
 	int* resultArray = new int[length];
 	//Do division:
 	for (int i = 0; i < length; i++)
 	{
-		while (temp < divisor && i < length) 
-		{ 
-			resultArray[i] = 0; 
-			if (i < length -1) i++;
-			temp = temp * 10 + listOfInts[i];
+		while ((!isBigger(temp,divisor,&isIdentical) || isIdentical) && i < length)
+		{
+			resultArray[i] = 0;
+			if (i < length - 1) i++;
+			temp = (temp * 10) + listOfInts[i];
 		}
 		if (i < length) //else: we finished, ignore remainder and quit loop
 		{
-			resultArray[i] = temp / divisor;
-			int substract = divisor * resultArray[i];
-			temp = temp - substract;
+			int remainder = 0;
+			resultArray[i] = divideNumbers(temp, divisor, &remainder);
+			temp = remainder;
 		}
 	}
+
 
 	CNumber resultInstance = CNumber();
 	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
@@ -528,8 +551,10 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 	return resultInstance;
 }
 
+
+
 //Non operator methods:
-string CNumber::ToString()
+string CNumber::ToString() const
 {
 	string result = "";
 	if (!isPositive) result += negative_sign;
@@ -540,7 +565,20 @@ string CNumber::ToString()
 	return result;
 }
 
-void CNumber::PrintNumber() { cout << printing << ToString() << newline; }
+int CNumber::ToInt() const
+{
+	// only call this function on numbers known to be small, otherwise integer overflow is likely
+	// thats why this method is private, only intended to be used inside other methods
+	int result = 0;
+	for (int i = 0; i < length; i++)
+	{
+		result = result * 10 + listOfInts[i];
+	}
+	if (!isPositive) result *= -1;
+	return result;
+}
+
+void CNumber::PrintNumber() const { cout << printing << ToString() << newline; }
 
 
 CNumber::~CNumber() { delete[] listOfInts; }

@@ -3,14 +3,14 @@
 
 int main()
 {
-    CNumber test = CNumber();
-    CNumber test2 = CNumber();
-    test = 125;
-    test2 = -10;
-    CNumber result = test + test2;
+    CNumber dividend = 2147483647;
+    CNumber divisor = 2007483647;
+    dividend *= 5;
+    divisor *= 2;
+    dividend.PrintNumber();
+    divisor.PrintNumber();
+    CNumber result = dividend / divisor;
     result.PrintNumber();
-    CNumber result2 = test / test2;
-    result2.PrintNumber();
 
     return 0;
 }
