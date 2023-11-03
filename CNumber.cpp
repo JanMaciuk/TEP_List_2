@@ -501,7 +501,7 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 		return result;
 	}
 
-	int divisor = 0;
+	unsigned long divisor = 0;
 	for(int i = 0; i < otherInstance.length; i++) { divisor = divisor * 10 + otherInstance.listOfInts[i]; }
 	int temp = listOfInts[0];
 	int* resultArray = new int[length];
