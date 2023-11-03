@@ -501,7 +501,6 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 		return result;
 	}
 
-	// divisor = int value of otherInstance.listOfInts
 	int divisor = 0;
 	for(int i = 0; i < otherInstance.length; i++) { divisor = divisor * 10 + otherInstance.listOfInts[i]; }
 	int temp = listOfInts[0];
