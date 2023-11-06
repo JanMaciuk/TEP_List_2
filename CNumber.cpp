@@ -10,7 +10,7 @@ int CNumber::countDigits(int value)
 	int count = 0;
 	while (value != 0)
 	{
-		value /= 10;
+		value /= baseNumber;
 		count++;
 	}
 	return count;
@@ -534,7 +534,7 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 		{
 			resultArray[i] = 0;
 			if (i < length - 1) i++;
-			temp = (temp * 10) + listOfInts[i];
+			temp = (temp * baseNumber) + listOfInts[i];
 		}
 		if (i < length) //else: we finished, ignore remainder and quit loop
 		{
@@ -545,10 +545,56 @@ CNumber CNumber::operator/(const CNumber& otherInstance)
 	}
 
 
-	CNumber resultInstance = CNumber();
+	CNumber resultInstance;
 	resultInstance.isPositive = (isPositive == otherInstance.isPositive); // if signs are the same, result will be positive
 	copyArray(resultInstance, &resultArray, length);
 	return resultInstance;
+}
+
+CNumber CNumber::Cmod(CNumber& otherInstance, CNumber** pcResult ){
+	// On-class modification, it is supposed to utilize code from the division operator
+	// method returns division remainder and stores the result in pcResult
+
+	bool isIdentical = false;
+	bool thisIsBigger = isBigger(*this, otherInstance, &isIdentical);
+	if (isIdentical) { return CNumber(1); }  //if the numbers are identical return 1 (dividing a number by itself)
+	if (!thisIsBigger) { return CNumber(0); } //if this is smaller than otherInstance, division will result in a number smaller than 1, return 0
+	// if this or otherInstance is zero, return zero
+	if ((otherInstance.length == 1 && otherInstance.listOfInts[0] == 0) || (length == 1 && listOfInts[0] == 0)) { return CNumber(0); }
+	// if otherInstance is 1, return a copy of this
+	if (otherInstance.length == 1 && otherInstance.listOfInts[0] == 1)
+	{
+		CNumber result = CNumber(*this);
+		return result;
+	}
+
+	CNumber divisor = CNumber(otherInstance);
+	CNumber temp = CNumber(listOfInts[0]); // will contain remainder
+	int* resultArray = new int[length];
+	//Do division:
+	for (int i = 0; i < length; i++)
+	{
+		while ((!isBigger(temp, divisor, &isIdentical) || isIdentical) && i < length)
+		{
+			resultArray[i] = 0;
+			if (i < length - 1) i++;
+			temp = (temp * baseNumber) + listOfInts[i];
+		}
+		if (i < length) //else: we finished, ignore remainder and quit loop
+		{
+			int remainder = 0;
+			resultArray[i] = divideNumbers(temp, divisor, &remainder);
+			temp = remainder;
+		}
+	}
+
+
+	if (*pcResult == NULL) {
+		// if pcResult is a nullptr, create a new CNumber pcResult
+		*pcResult = new CNumber();
+	}
+	copyArray(**pcResult, &resultArray, length);
+	return temp;
 }
 
 
@@ -572,7 +618,7 @@ int CNumber::ToInt() const
 	int result = 0;
 	for (int i = 0; i < length; i++)
 	{
-		result = result * 10 + listOfInts[i];
+		result = result * baseNumber + listOfInts[i];
 	}
 	if (!isPositive) result *= -1;
 	return result;

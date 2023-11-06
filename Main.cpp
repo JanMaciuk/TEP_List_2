@@ -11,7 +11,12 @@ int main()
     divisor.PrintNumber();
     CNumber result = dividend / divisor;
     result.PrintNumber();
-
+    CNumber test1 = 21;
+    CNumber test2 = 4;
+    CNumber* testResult = NULL;
+    CNumber testRemainder = test1.Cmod(test2, &testResult);
+    testRemainder.PrintNumber();
+    testResult->PrintNumber();
     return 0;
 }
 

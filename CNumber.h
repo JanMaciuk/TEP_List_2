@@ -70,6 +70,7 @@ public:
 	//Methods:
 	string ToString() const;
 	void PrintNumber() const;
+	CNumber Cmod(CNumber &otherInstance, CNumber **pcResult);
 
 
 
